@@ -16,7 +16,7 @@ param tags object = {
   solution: 'smoke-test-deploy'
   environment: environmentName
   generatedBy: 'idea-generator-agent'
-  generatedAt: '2026-05-19T03:05:11Z'
+  generatedAt: '2026-05-19T03:33:50Z'
 }
 
 // ── Monitoring ─────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ module search 'br/public:avm/res/search/search-service:0.7.1' = {
   params: {
     name: '${resourceToken}-search'
     location: location
-    sku: { name: 'standard' }
+    sku: 'standard'
     semanticSearch: 'standard'
   }
 }
