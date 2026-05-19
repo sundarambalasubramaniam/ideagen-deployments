@@ -7,7 +7,7 @@ param location string = resourceGroup().location
 @allowed(['dev', 'staging', 'prod'])
 param environmentName string = 'dev'
 
-@description('Unique resource token ΓÇö auto-generated if not provided')
+@description('Unique resource token ╬ô├ç├╢ auto-generated if not provided')
 param resourceToken string = uniqueString(resourceGroup().id, environmentName)
 
 @description('Foundry model deployment name used by the agent')
@@ -26,7 +26,7 @@ var acrName = toLower(replace('${resourceToken}acr', '-', ''))
 var foundryAccountName = '${resourceToken}-ai'
 var foundryProjectName = 'proj-${resourceToken}'
 
-// ΓöÇΓöÇ Monitoring ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ╬ô├╢├ç╬ô├╢├ç Monitoring ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
 module monitoring 'br/public:avm/res/operational-insights/workspace:0.7.0' = {
   name: 'logAnalyticsDeploy'
   params: {
@@ -36,15 +36,15 @@ module monitoring 'br/public:avm/res/operational-insights/workspace:0.7.0' = {
   }
 }
 
-// ΓöÇΓöÇ User-assigned managed identity (used by Container App) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ╬ô├╢├ç╬ô├╢├ç User-assigned managed identity (used by Container App) ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
 resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: '${resourceToken}-uami'
   location: location
   tags: tags
 }
 
-// ΓöÇΓöÇ Azure AI Foundry: AI Services account + project + model deployment ΓöÇΓöÇΓöÇΓöÇ
-resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
+// ╬ô├╢├ç╬ô├╢├ç Azure AI Foundry: AI Services account + project + model deployment ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+resource foundry 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
   name: foundryAccountName
   location: location
   tags: tags
@@ -59,7 +59,7 @@ resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   }
 }
 
-resource foundryProject 'Microsoft.CognitiveServices/accounts/projects@2024-10-01' = {
+resource foundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
   parent: foundry
   name: foundryProjectName
   location: location
@@ -68,7 +68,7 @@ resource foundryProject 'Microsoft.CognitiveServices/accounts/projects@2024-10-0
   properties: {}
 }
 
-resource gptDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+resource gptDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
   parent: foundry
   name: modelDeploymentName
   sku: { name: 'GlobalStandard', capacity: 10 }
@@ -88,7 +88,7 @@ resource aiUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-0
   }
 }
 
-// ΓöÇΓöÇ Container Registry ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ╬ô├╢├ç╬ô├╢├ç Container Registry ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   name: acrName
   location: location
@@ -108,7 +108,7 @@ resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-
   }
 }
 
-// ΓöÇΓöÇ Container Apps Environment ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ╬ô├╢├ç╬ô├╢├ç Container Apps Environment ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
 resource acaEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: '${resourceToken}-acaenv'
   location: location
@@ -120,8 +120,8 @@ resource acaEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-// ΓöÇΓöÇ Solution-specific add-on resources (technique-driven) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-// RAG Solution ΓÇö Azure AI Search + OpenAI
+// ╬ô├╢├ç╬ô├╢├ç Solution-specific add-on resources (technique-driven) ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+// RAG Solution ╬ô├ç├╢ Azure AI Search + OpenAI
 module search 'br/public:avm/res/search/search-service:0.7.1' = {
   name: 'searchDeploy'
   params: {
