@@ -1,0 +1,91 @@
+name: Deploy foundry-agent-demo (dev)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'solutions/foundry-agent-demo/**'
+      - '.github/workflows/deploy-foundry-agent-demo.yml'
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RG_NAME: rg-foundry-agent-demo-dev
+  LOCATION: eastus
+  APP_NAME: foundry-agent-demo-agent
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure Resource Group
+        run: az group create -n "$RG_NAME" -l "$LOCATION"
+
+      - name: Deploy Bicep (infra + Foundry)
+        id: infra
+        run: |
+          set -euo pipefail
+          outputs=$(az deployment group create \
+            -g "$RG_NAME" \
+            -f solutions/foundry-agent-demo/infra/main.bicep \
+            -p solutions/foundry-agent-demo/infra/main.bicepparam \
+            --query properties.outputs -o json)
+          echo "$outputs"
+          echo "ACR_LOGIN_SERVER=$(echo "$outputs" | jq -r .acrLoginServer.value)" >> $GITHUB_ENV
+          echo "ACR_NAME=$(echo "$outputs" | jq -r .acrName.value)" >> $GITHUB_ENV
+          echo "IDENTITY_RESOURCE_ID=$(echo "$outputs" | jq -r .identityResourceId.value)" >> $GITHUB_ENV
+          echo "IDENTITY_CLIENT_ID=$(echo "$outputs" | jq -r .identityClientId.value)" >> $GITHUB_ENV
+          echo "ACA_ENV_ID=$(echo "$outputs" | jq -r .acaEnvironmentId.value)" >> $GITHUB_ENV
+          echo "FOUNDRY_PROJECT_ENDPOINT=$(echo "$outputs" | jq -r .foundryProjectEndpoint.value)" >> $GITHUB_ENV
+          echo "MODEL_DEPLOYMENT_NAME=$(echo "$outputs" | jq -r .modelDeploymentName.value)" >> $GITHUB_ENV
+
+      - name: Build & push image
+        run: |
+          set -euo pipefail
+          IMAGE="$ACR_LOGIN_SERVER/$APP_NAME:${{ github.sha }}"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          az acr login -n "$ACR_NAME"
+          docker build -t "$IMAGE" solutions/foundry-agent-demo/app
+          docker push "$IMAGE"
+
+      - name: Deploy Container App (agent)
+        run: |
+          set -euo pipefail
+          if az containerapp show -g "$RG_NAME" -n "$APP_NAME" >/dev/null 2>&1; then
+            az containerapp update \
+              -g "$RG_NAME" -n "$APP_NAME" \
+              --image "$IMAGE" \
+              --set-env-vars FOUNDRY_PROJECT_ENDPOINT="$FOUNDRY_PROJECT_ENDPOINT" MODEL_DEPLOYMENT_NAME="$MODEL_DEPLOYMENT_NAME" AZURE_CLIENT_ID="$IDENTITY_CLIENT_ID"
+          else
+            az containerapp create \
+              -g "$RG_NAME" -n "$APP_NAME" \
+              --environment "$ACA_ENV_ID" \
+              --image "$IMAGE" \
+              --user-assigned "$IDENTITY_RESOURCE_ID" \
+              --registry-server "$ACR_LOGIN_SERVER" \
+              --registry-identity "$IDENTITY_RESOURCE_ID" \
+              --ingress external --target-port 8000 \
+              --min-replicas 1 --max-replicas 3 \
+              --cpu 0.5 --memory 1.0Gi \
+              --env-vars FOUNDRY_PROJECT_ENDPOINT="$FOUNDRY_PROJECT_ENDPOINT" MODEL_DEPLOYMENT_NAME="$MODEL_DEPLOYMENT_NAME" AZURE_CLIENT_ID="$IDENTITY_CLIENT_ID"
+          fi
+
+      - name: Output agent URL
+        run: |
+          FQDN=$(az containerapp show -g "$RG_NAME" -n "$APP_NAME" --query properties.configuration.ingress.fqdn -o tsv)
+          echo "### Agent deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://$FQDN" >> $GITHUB_STEP_SUMMARY
+          echo "- Health: https://$FQDN/healthz" >> $GITHUB_STEP_SUMMARY
+          echo "- Chat:   POST https://$FQDN/chat  body: {\"message\":\"hello\"}" >> $GITHUB_STEP_SUMMARY
