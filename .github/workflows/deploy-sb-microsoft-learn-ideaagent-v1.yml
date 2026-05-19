@@ -1,0 +1,40 @@
+name: Deploy sb-microsoft-learn-ideaagent-v1 (dev)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'solutions/sb-microsoft-learn-ideaagent-v1/**'
+      - '.github/workflows/deploy-sb-microsoft-learn-ideaagent-v1.yml'
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RG_NAME: rg-sb-microsoft-learn-ideaagent-v1-dev
+  LOCATION: eastus
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure Resource Group
+        run: az group create -n "$RG_NAME" -l "$LOCATION"
+
+      - name: Deploy Bicep
+        run: |
+          az deployment group create \
+            -g "$RG_NAME" \
+            -f solutions/sb-microsoft-learn-ideaagent-v1/infra/main.bicep \
+            -p solutions/sb-microsoft-learn-ideaagent-v1/infra/main.bicepparam
