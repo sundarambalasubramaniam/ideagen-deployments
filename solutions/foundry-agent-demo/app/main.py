@@ -1,10 +1,10 @@
 """FastAPI agent for foundry-agent-demo.
 
-Wraps a Microsoft Agent Framework ChatAgent backed by an Azure AI Foundry
+Wraps a Microsoft Agent Framework Agent backed by an Azure AI Foundry
 project. Exposes:
-  GET  /         — service info
-  GET  /healthz  — liveness probe
-  POST /chat     — invoke the agent ({"message": "..."})
+  GET  /         ΓÇö service info
+  GET  /healthz  ΓÇö liveness probe
+  POST /chat     ΓÇö invoke the agent ({"message": "..."})
 """
 from __future__ import annotations
 
@@ -33,25 +33,25 @@ async def lifespan(app: FastAPI):
     project_endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT")
     model_name = os.environ.get("MODEL_DEPLOYMENT_NAME", "gpt-4o-mini")
     if not project_endpoint:
-        log.warning("FOUNDRY_PROJECT_ENDPOINT not set — agent will return errors on /chat.")
+        log.warning("FOUNDRY_PROJECT_ENDPOINT not set ΓÇö agent will return errors on /chat.")
         yield
         return
 
     # Imported lazily so the container still starts if these packages
     # are missing at build time during early iteration.
     from azure.identity.aio import DefaultAzureCredential
-    from agent_framework import ChatAgent
+    from agent_framework import Agent
     from agent_framework.foundry import FoundryChatClient
 
     credential = DefaultAzureCredential()
     client = FoundryChatClient(
         project_endpoint=project_endpoint,
-        model_deployment_name=model_name,
+        model=model_name,
         credential=credential,
     )
-    _state["agent"] = ChatAgent(chat_client=client, instructions=INSTRUCTIONS)
+    _state["agent"] = Agent(client=client, name="foundry-agent-demo-agent", instructions=INSTRUCTIONS)
     _state["credential"] = credential
-    log.info("Agent initialized — project=%s model=%s", project_endpoint, model_name)
+    log.info("Agent initialized ΓÇö project=%s model=%s", project_endpoint, model_name)
     try:
         yield
     finally:
@@ -89,7 +89,7 @@ def healthz():
 async def chat(req: ChatRequest):
     agent = _state.get("agent")
     if agent is None:
-        raise HTTPException(status_code=503, detail="Agent not initialized — check FOUNDRY_PROJECT_ENDPOINT.")
+        raise HTTPException(status_code=503, detail="Agent not initialized ΓÇö check FOUNDRY_PROJECT_ENDPOINT.")
     try:
         result = await agent.run(req.message)
     except Exception as exc:  # noqa: BLE001
