@@ -48,7 +48,7 @@ module openai 'br/public:avm/res/cognitive-services/account:0.7.2' = {
     kind: 'OpenAI'
     deployments: [
       { name: 'gpt-4o', model: { format: 'OpenAI', name: 'gpt-4o', version: '2024-11-20' }, sku: { name: 'GlobalStandard', capacity: 30 } }
-      { name: 'text-embedding-ada-002', model: { format: 'OpenAI', name: 'text-embedding-ada-002', version: '2' }, sku: { name: 'Standard', capacity: 120 } }
+      { name: 'text-embedding-ada-002', model: { format: 'OpenAI', name: 'text-embedding-ada-002', version: '2' }, sku: { name: 'Standard', capacity: 60 } }
     ]
   }
 }
